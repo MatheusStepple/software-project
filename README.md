@@ -1,134 +1,85 @@
+### Seletiva RoboCIn 2025 - Software
 
-# Bem-vindos ao repositório do projeto de software! 🥳
-
-Este repositório concentra toda a base de código que será usado nesta seletiva. Nele, estão disponibilizados tanto o ambiente simulado para testar o código desenvolvido quanto o arquivo base para o desenvolvimento, no qual deverão ser integradas as mudanças que forem feitas. O projeto consiste em desenvolver formas de solucionar os problemas de planejamento de trajetória e de atribuição de tarefas para os agentes do ambiente. Para mais detalhes do projeto, reveja o documento de especificação no nosso site: https://www.robocin.com.br/seletiva.
-
-## Dependências
-
-- [Python](https://www.python.org/]) versão 3.10.x
-- [Git](https://git-scm.com/)
-- [Pygame](https://www.pygame.org/news)
-- [Gymnasium](https://gymnasium.farama.org/index.html) versão 0.29.1
-- [Protobuf](https://protobuf.dev/) versão 3.20
-- [rSoccer](https://github.com/goncamateus/rSoccer)
-- [PyVirtualDisplay](https://github.com/ponty/PyVirtualDisplay) versão 3.0 ou acima
-- [MoviePy](https://pypi.org/project/moviepy/) versão 1.0.0 ou acima
-- [Numpy](https://numpy.org/) versão 1.21.2
-- [Argparse](https://docs.python.org/3.10/library/argparse.html)
-
-Exceto o Python e o Git, as dependências podem ser instaladas com:
-
-```bash
-  pip install -r requirements.txt
-```
-
-Caso a sua versão do Python não seja a correta, [esse tutorial](https://gist.github.com/rutcreate/c0041e842f858ceb455b748809763ddb) explica como instalar a versão correta no Linux.
-
-## Instalação
-
-### Linux
-
-1. Crie um [fork](https://docs.github.com/pt/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) desse repositório.
-
-2. Clone o repositório.
-```bash
-  git clone https://github.com/NomeDoUsuario/software-project.git
-```
-
-3. Entre na diretório do repositório clonado.
-```bash
-  cd software-project
-```
-
-4. Dentro da pasta, use o comando de instalação das dependências.
-```bash
-  pip install -r requirements.txt
-```
-
-### Windows (WSL)
-
-Será necessário usar o WSL (Windows Subsystem for Linux) para ser capaz de rodar o projeto no Windows.
-
-1. Instale o WSL. 
-[Esse tutorial](https://medium.com/@charles.guinand/installing-wsl2-python-and-virtual-environments-on-windows-11-with-vs-code-a-comprehensive-guide-32db3c1a5847#:~:text=4.2%20Install%20the%20WSL%20Extension,%E2%80%9D%20and%20click%20%E2%80%9CInstall.%E2%80%9D) explica como instalar o WSL, o Python e como fazer a integração com o Visual Studio Code.
-
-2. Crie um [fork](https://docs.github.com/pt/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) desse repositório.
-
-3. Clone o repositório.
-```bash
-  git clone https://github.com/NomeDoUsuario/software-project.git
-```
-
-4. Entre na diretório do repositório clonado.
-```bash
-  cd software-project
-```
-
-5. Dentro da pasta, use o comando de instalação das dependências.
-```bash
-  pip install -r requirements.txt
-```
-
-### MacOS
-
-1. Instale o [Homebrew](https://brew.sh/) e a versão do [Pyenv](https://github.com/pyenv/pyenv) para instalação do Python
-
-```bash
-  brew install pyenv
-  pyenv install 3.10
-  pyenv global 3.10
-```
-
-2. Crie um [fork](https://docs.github.com/pt/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) desse repositório.
-
-3. Clone o repositório.
-```bash
-  git clone https://github.com/NomeDoUsuario/software-project.git
-```
-
-4. Entre na diretório do repositório clonado.
-```bash
-  cd software-project
-```
-
-5. Instale a [ODE](https://www.ode.org/) (Open Dynamics Engine)
-```bash
-  brew install ode
-```
-
-6. Dentro da pasta, use o comando de instalação das dependências.
-```bash
-  pip install -r requirements.txt
-```
-⚠️ *OBS:* Para rodar no macOS com a configuração acima, utilize o comando `python3.10` ao invés de `python3` no passo a passo a seguir.
-
-Tudo pronto para rodar o projeto! 🚀
-
-## Como rodar?
-
-Para rodar, basta executar o arquivo `start.py`.
-```bash
-  python3 start.py
-```
-
-Como o projeto possui 4 fases, é possível escolher qual fase rodar utilizando a flag `-d` com o argumento de dificuldade, que vai de 1 a 4:
-
-```bash
-  python3 start.py -d [DIFICULDADE]
-```
-
-Para tirar dúvidas, use o comando com a flag `-h`:
-
-```bash
-  python3 start.py -h
-```
-
-⚠️ *OBS:* Caso a instalação das dependências não tenha sido feita em um ambiente virtual e os comandos para rodar não estejam funcionando, tente usar `python3.10` ao invés de `python3`. 
-⚠️ *OBS:* Caso tenha problemas com a instalação das dependências do pacote `rc-robosim`ou de CMAKE no ambiente Linux, experimente atualizar o sistema de pacotes do sistema e reinstalar a biblioteca ODE (Open Dynamics Engine) com os comandos: 
-```bash
-  sudo apt update
-  sudo apt upgrade
-  sudo apt install libode-dev
-```
+# Meu projeto de Agente Robô com Desvio de Obstáculos e Atribuição de Tarefas
 
 
+
+## 📋 Descrição Geral
+Este projeto implementa um sistema dinâmico e em tempo real para controle do "cérebro" de agentes robóticos em um ambiente simulado. Utilizando técnicas personalizadas de navegação, como **Ray Casting**, o sistema permite que os agentes detectem e evitem obstáculos enquanto realizam tarefas específicas, como alcançar destinos de maneira eficiente e coordenada.
+
+---
+
+## ⚙️ Funcionalidades
+- **Navegação com Evitação de Obstáculos**:
+  - Utiliza **Ray Casting** para detectar obstáculos e calcular desvios baseados em ângulos e distâncias.
+- **Atribuição de Tarefas**:
+  - Os agentes são designados ao destino mais próximo, garantindo exclusividade de tarefas.
+- **Adaptação em Tempo Real**:
+  - Sistema ajusta rotas dinamicamente conforme mudanças no ambiente, incluindo posicionamento de obstáculos e destinos.
+- **Integração Simulada**:
+  - Baseado em bibliotecas como `gymnasium`, `rsoccer_gym` e `pygame`.
+
+---
+
+## 🧠 Algoritmo Principal: Ray Casting
+- **Conceito**:
+  - Inspiração no conceito de "ver" antes de "agir".
+  - Simula raios emitidos pelo agente em direção ao alvo para identificar obstáculos no caminho.
+- **Características**:
+  - Calcula distância até os obstáculos e ajusta o ângulo para evitar colisões.
+  - Baseado em trigonometria para movimentos precisos.
+
+---
+
+## 🏗️ Estrutura do Projeto
+- **`agent.py`**:
+  - Código principal do agente, incluindo lógica de desvio e designação de tarefas.
+- **`utils/`**:
+  - Utilitário para armazenar dados históricos, como trajetórias e estados.
+- **Simuladores**:
+  - Integração com simulações baseadas em `rsoccer_gym` e `gymnasium`.
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+- **Python**:
+  - Linguagem principal para desenvolvimento.
+- **Bibliotecas**:
+  - `gymnasium` para simulações dinâmicas.
+  - `rsoccer_gym` para controle robótico.
+  - `pygame` para manipulação de eventos.
+- **Algoritmos**:
+  - "Ray Casting" e lógica personalizada para desvio de obstáculos.
+  - Atribuição de tarefas com base na distância.
+
+---
+
+## 🚀 Melhorias e Implementações Futuras
+- **Aprimoramento da Navegação**:
+  - Implementar técnicas mais robustas para desvio de obstáculos
+- **Algoritmos**:
+  - **Otimização do Ray Casting**:
+    - Reduzir consumo de recursos ajustando número de raios e intervalos angulares.
+    - Implementar verificação em níveis hierárquicos para detectar obstáculos em diferentes escalas.
+  - **Atribuição de Tarefas Avançada**:
+    - Usar algoritmos como **Hungarian Algorithm** para designação ótima em ambientes multiagentes.
+    - Implementar lógica de reassigmento para reagir rapidamente a mudanças no ambiente.
+- **Integração Multiagentes**:
+  - Criar coordenação colaborativa entre agentes para evitar conflitos de rota e melhorar eficiência.
+  - Melhorar a capacidade de troca de informações entre agentes.
+- **Visualização e Feedback**:
+  - Melhorar interface visual com indicadores de estado do agente (ex. trajetórias planejadas e ângulos de Ray Casting).
+  - Melhorar o feedback em tempo real no ambiente para depuração e análise de desempenho.
+- **Suporte a Hardware Real**:
+  - Preparar o código para integração com robôs físicos, incluindo bibliotecas de controle como `ROS` e sensores reais como LIDAR.
+
+
+---
+
+## 🚀 Como Usar
+1. **Instale as Dependências**:
+   ```bash
+   pip install -r requirements.txt
+2. **Inicie o arquivo do start.py com a dificuldade 1-4**:
+   ```bash
+   python3 start.py -d 1
