@@ -1,13 +1,18 @@
 ### 💚🚀 Seletiva RoboCIn 2025 - Software 🚀💚
 
+
+
 # Meu projeto de Agente Robô com Desvio de Obstáculos e Atribuição de Tarefas 🚀💚
+
 
 
 
 ## 📋 Descrição Geral
 Este projeto implementa um sistema dinâmico e em tempo real para controle do "cérebro" de agentes robóticos em um ambiente simulado. Utilizando técnicas personalizadas de navegação, como **Ray Casting**, o sistema permite que os agentes detectem e evitem obstáculos enquanto realizam tarefas específicas, como alcançar destinos de maneira eficiente e coordenada.
 
+
 ---
+
 
 ## ⚙️ Funcionalidades
 - **Navegação com Evitação de Obstáculos**:
@@ -19,7 +24,9 @@ Este projeto implementa um sistema dinâmico e em tempo real para controle do "c
 - **Integração Simulada**:
   - Baseado em bibliotecas como `gymnasium`, `rsoccer_gym` e `pygame`.
 
+
 ---
+
 
 ## 🧠 Algoritmo Principal: Ray Casting
 - **Conceito**:
@@ -29,7 +36,9 @@ Este projeto implementa um sistema dinâmico e em tempo real para controle do "c
   - Calcula distância até os obstáculos e ajusta o ângulo para evitar colisões.
   - Baseado em trigonometria para movimentos precisos.
 
+
 ---
+
 
 ## 🏗️ Estrutura do Projeto
 - **`agent.py`**:
@@ -52,7 +61,9 @@ Este projeto implementa um sistema dinâmico e em tempo real para controle do "c
   - "Ray Casting" e lógica personalizada para desvio de obstáculos.
   - Atribuição de tarefas com base na distância.
 
+
 ---
+
 
 ## 🚀 Melhorias e Implementações Futuras
 - **Aprimoramento da Navegação**:
@@ -70,11 +81,9 @@ Este projeto implementa um sistema dinâmico e em tempo real para controle do "c
 - **Visualização e Feedback**:
   - Melhorar interface visual com indicadores de estado do agente (ex. trajetórias planejadas e ângulos de Ray Casting).
   - Melhorar o feedback em tempo real no ambiente para depuração e análise de desempenho.
-- **Suporte a Hardware Real**:
-  - Preparar o código para integração com robôs físicos, incluindo bibliotecas de controle como `ROS` e sensores reais como LIDAR.
-
 
 ---
+
 
 ## 🚀 Como Usar
 1. **Instale as Dependências**:
