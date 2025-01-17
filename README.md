@@ -1,6 +1,6 @@
-### Seletiva RoboCIn 2025 - Software
+### 💚🚀 Seletiva RoboCIn 2025 - Software 🚀💚
 
-# Meu projeto de Agente Robô com Desvio de Obstáculos e Atribuição de Tarefas
+# Meu projeto de Agente Robô com Desvio de Obstáculos e Atribuição de Tarefas 🚀💚
 
 
 
