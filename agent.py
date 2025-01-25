@@ -32,7 +32,7 @@ class ExampleAgent(BaseAgent):
         self.targets = []
         self.target_designado = None
 
-    def ray_casting(self, target, max_distance=3): # Realiza o tal do ray casting em direção ao alvo.
+    def ray_casting(self, target, max_distance=3): ### Realiza o tal do ray casting em direção ao alvo.
         
         dx = target.x - self.robot.x
         dy = target.y - self.robot.y
@@ -109,7 +109,7 @@ class ExampleAgent(BaseAgent):
             ExampleAgent.ultimo_display = novo_display
 
 
-    def status_agente(self): # Retorna o status do agente baseado em suas condições atuais
+    def status_agente(self): ### Retorna o status do agente baseado em suas condições atuais
         
         if self.modo_desviar:
             # Verifica se o desvio ainda é necessário
@@ -124,7 +124,7 @@ class ExampleAgent(BaseAgent):
         return "Sem alvo"
 
 
-    def escolher_target(self): #escolhe o target mais próximo do agente
+    def escolher_target(self): ### Escolhe o target mais próximo do agente
         
         if not self.targets:
             return None, float('inf')
@@ -133,14 +133,14 @@ class ExampleAgent(BaseAgent):
         distancia_mais_perto = self.calcular_distancia(target_mais_perto)
         return target_mais_perto, distancia_mais_perto
 
-    def calcular_distancia(self, target): # Calcula a distância do agente até o alvo
+    def calcular_distancia(self, target): ### Calcula a distância do agente até o alvo
         
         dx = target.x - self.robot.x
         dy = target.y - self.robot.y
         return (dx**2 + dy**2)**0.5
 
 
-    def designar_task(self): # Atribui uma task ao agente, fazendo a lógica de escolher o mais perto tal
+    def designar_task(self): ### Atribui uma task ao agente, fazendo a lógica de escolher o mais perto tal
 
         target_mais_perto, distancia_mais_perto = self.escolher_target()
         if target_mais_perto is None:
@@ -167,7 +167,7 @@ class ExampleAgent(BaseAgent):
         ExampleAgent.distancias_agentes[target_id] = (self.id, distancia_mais_perto)
         self.target_designado = target_mais_perto
 
-    def mover_direcao_target(self, target): # Move o agente em direção ao alvo ou evita obstáculos se necessário.
+    def mover_direcao_target(self, target): ### Move o agente em direção ao alvo ou evita obstáculos se necessário
         
         obstacle_distance = self.ray_casting(target)
 
@@ -184,7 +184,7 @@ class ExampleAgent(BaseAgent):
         self.set_vel(velocidade_ajustada)
         self.set_angle_vel(velocidade_angular_target)
 
-    def avoid_obstacle(self, target): # Evita obstáculos ajustando o trajeto.
+    def avoid_obstacle(self, target): ### Evita obstáculos ajustando o trajeto
        
         dx = target.x - self.robot.x
         dy = target.y - self.robot.y
@@ -204,7 +204,7 @@ class ExampleAgent(BaseAgent):
 
         target_velocity, velocidade_angular_target = Navigation.goToPoint(self.robot, novo_target)
 
-        if distance_to_target < self.distancia_perto_demais: #desacelerar ou velocidade normal para o agente, dependendo da distancia para o target
+        if distance_to_target < self.distancia_perto_demais: # desacelerar ou velocidade normal para o agente, dependendo da distancia para o target
             self.velocidade_do_agente = 0.9
         else:
             self.velocidade_do_agente = 1.0
@@ -213,12 +213,12 @@ class ExampleAgent(BaseAgent):
 
         return velocidade_ajustada, velocidade_angular_target
 
-    def decision(self): # Toma decisões...
+    def decision(self): ### Toma decisões...
         
         self.designar_task()
         if self.target_designado:
             self.mover_direcao_target(self.target_designado)
         self.painel_de_controle()
 
-    def post_decision(self): # nao sei oque fazer aqui
+    def post_decision(self): ### Nao sei oque fazer aqui
         pass
