@@ -1,171 +1,224 @@
-##  CÓDIGO DA ENTREGA PRÉVIA  17/01 ##
-
 import math
+import os
 import time
 from utils.ssl.Navigation import Navigation, Point
 from utils.ssl.base_agent import BaseAgent
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-d", "--dificuldade", type=int, required=True)
+args = parser.parse_args()
+dificuldade = args.dificuldade
 
 class ExampleAgent(BaseAgent):
-    assigned_targets = {}  # Dicionário compartilhado entre agentes: {target: (agent_id, distancia)}
+    distancias_agentes = {}  # Dicionário: {id_alvo: (id_agente, distancia)}
+    agentes_informacoes = {}  # Dicionário para informações exibidas
+    ultimo_display = ""  # Para evitar exibições redundantes
 
     def __init__(self, id=0, yellow=False):
-        self.id = id
-        self.yellow = yellow
-        self.last_avoidance_time = time.time()
+        super().__init__(id, yellow)
+        self.modo_desviar = True
 
-        ### PARÂMETROS DE NAVEGAÇÃO E EVITAÇÃO DE OBSTÁCULOS ###
-        self.avoidance_mode = False  # Modo de evitação de obstáculos ativo ou inativo
-        self.avoidance_distancia_range = (1, 0)  # Faixa de distâncias para aplicar a evitação de obstáculos
-        self.safe_margin = 0.2  # Margem de segurança para evitar colisões
-        self.close_obstacle_distancia = 0.4  # Distância crítica para identificar obstáculos próximos
-        self.slow_down_factor = 1.0  # Fator de desaceleração quando o agente se aproxima de obstáculos
+        ###### PARAMETROS ######
 
-        self.targets = []  # Lista de objetivos a serem atingidos pelo agente
-        self.assigned_target = None  # Objetivo atribuído ao agente atual
-        self.visited_targets = set()  # Conjunto de objetivos já visitados ou cumpridos
+        self.distancia_de_evitar_range = (1, 0.2) # entre de 0.5 até 1.5, e de 0 até 0.5
+        self.margem_safe = 0.2  # tem que ser 0.2, pois é o raio do objetivo e conta como margem
+        self.distancia_perto_demais = 0.4 # desacelera chegando perto do objetivo, é bom de 0.3 até 0.6, dependendo da quantidade de desaceleração
+        self.velocidade_do_agente = 1 # velocidade máxima no ínicio, depois vai mudar
+        self.distancia_alerta = 0.5 #distancia que faz o display mostrar "desviando de obstaculos"
 
-    ### FUNÇÕES DE DETECÇÃO E EVITAÇÃO DE OBSTÁCULOS ###
+        ###### PARAMETROS ######
 
-    def cast_ray(self, target, max_distancia=3):
-        """Simula a detecção de obstáculos ao longo de uma linha reta até o objetivo."""
+        self.targets = []
+        self.target_designado = None
 
-        ## calcular a distancia real no plano cartesiano
+    def ray_casting(self, target, max_distance=3): # Realiza o tal do ray casting em direção ao alvo.
+        
         dx = target.x - self.robot.x
         dy = target.y - self.robot.y
-        distancia_to_target = math.sqrt(dx**2 + dy**2)
 
-        # Simula a detecção de obstáculos com base na distância máxima permitida
-        if distancia_to_target < max_distancia:
-            return distancia_to_target  # Obstáculo detectado dentro do limite
-        return float('inf')  # Sem obstáculos detectados dentro do alcance
+        distance_to_target = (dx**2 + dy**2)**0.5
 
-    def avoid_obstacle(self, target):
-        """Lógica de desvio de obstaculos quando o agente está se aproximando de um objetivo."""
+
+        return distance_to_target if distance_to_target < max_distance else float('inf')
+    
+    def painel_de_controle(self): ### Exibe informações detalhadas e organizadas sobre a simulação. Se ligar em abrir o terminal do ubuntu no tamanho certo
+        
+        
+        ExampleAgent.agentes_informacoes[self.id] = {
+            "posicao": f"({self.robot.x:.1f}, {self.robot.y:.1f})",
+            "status": self.status_agente(),
+        }
+
+        # usa info_linha como uma lista e vai dando append, pra cada coisa que eu quero mostrar
+
+        info_linha = [f"--- INFORMAÇÕES DA SIMULAÇÃO DE DIFICULDADE {dificuldade} ---"]
+        info_linha.append("")
+
+        for agent_id, info in sorted(ExampleAgent.agentes_informacoes.items()): #contrói o painel de controle com as informações
+            posicao = info["posicao"]
+            status = info["status"]
+            info_linha.append(f"AGENTE {agent_id + 1} | Posição: {posicao} | Status: {status}")
+
+        info_linha.append("")
+
+        info_linha.append(f"Número total de agentes: {len(ExampleAgent.agentes_informacoes)}")
+        info_linha.append("-------------------------------")
+        info_linha.append("")
+        info_linha.append('Matheus "Stepple" Stepple')
+        
+        # desenho artístico feito em 1892 por Leonardo Da Vinci
+        info_linha.append("""
+                                                                                
+                .=%%%%%%%%%%%%%%%%%#-  .             
+            .-%%%%%%%%%%%%%%%%%%%%%%%%%@+:           
+         :-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%=.         
+       :=%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%=:       
+     .=%%%%%%%%%%%%%%##*=-::-=*##%%%%%%%%%%%%%-.     
+    --%%%%%%%%%##+-.  .:-#@@#-:.  .-+*#%%%%%%%%%-.   
+   -@%%%%%%%%%-.:::@@@@@@@@@@@@@@@@:--.-#%%%%%%%%-   
+   =%%%%%%%%%*-@@@@@@@@@@@@@@@@@@@@@@-@+*%%%%%%%%%=  
+  -%%%%%%%%%#::@@@#:@@@@@@@@@@@@@@ +@@@::%%%%%%%%%%= 
+ =%%%%%%%%%%*-@@@.  @@@@@@@@@@@@@=  :@@@.%%%%%%%%%%% 
+:%%%%%%%%%%%*+@@@.  @@@@@@@@@@@@@*  +@@@.%%%%%%%%%%% 
+ #%%%%%%%%%%*.@@@@@@@@@@@@@@@@@@@@@@@@@@.%%%%%%%%%%% 
+ %%%%%%%%%%%* @ @@@@@@@@@@@@@@@@@@@@@# .:%%%%%%%%%%% 
+ %%%%%%%%%%=.:@@@@*--:::::...::::-=#@@@@ -*%%%%%%%%% 
+ %%%%%%%%*: @-@@@@@@@@@@@@@@@@@@@@@@@@@@@@ =%%%%%%%% 
+ %%%%%%%=.+@@ @@@@@@@@--.    :-.@@@@@@@@-@@ :#%%%%%% 
+ %%%%%#- @@@@:@@@@@@@.:@@@@@@@*. @@@@@@@@@@@+.*%%%%% 
+.@%%%%+=@@@@@ @@@@@@@@ @@@@@@@@ @@@@@@@-:@@@@@:%%%%% 
+ #%%%%=@@@@@. -@@@@@@@@@@@@@@@@@@@@@@@@  @@@@@:#%%%= 
+  +@%%=@@@@--#- @@@@@@@@@@@@@@@@@@@@@#.++.%@@@-#%%-  
+   +%%*:..:+#%%=.-@%@@@@@@@@@@@@@@@@.:*%%*-. .=%%-   
+    %@%%%%%%%%%%#=: -@@@-   .*@@@:.-+%%%%%%%%%%%-    
+     +-%%%%%%%%%%%%#+:.:+#%%*-..:+%%%%%%%%%%%%=.     
+       .-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%-       
+         .-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%@+:        
+            -#%%%%%%%%%%%%%%%%%%%%%%%%%%=:.          
+               :+@%%%%%%%%%%%%%%%%%#-.               
+        
+    """)
+        info_linha.extend([""] * 10)  
+        
+        # Verifica se a exibição mudou
+        novo_display = "\n".join(info_linha)
+        if novo_display != ExampleAgent.ultimo_display:
+            
+            print(novo_display)
+            ExampleAgent.ultimo_display = novo_display
+
+
+    def status_agente(self): # Retorna o status do agente baseado em suas condições atuais
+        
+        if self.modo_desviar:
+            # Verifica se o desvio ainda é necessário
+            if self.target_designado and self.ray_casting(self.target_designado) < self.distancia_alerta:
+                self.modo_desviar = True
+                return "Evitando obstáculo"
+            else:
+                self.modo_desviar = False  # Sai do modo desviar
+                return "Seguindo para o alvo"
+            
+        
+        return "Sem alvo"
+
+
+    def escolher_target(self): #escolhe o target mais próximo do agente
+        
+        if not self.targets:
+            return None, float('inf')
+
+        target_mais_perto = min(self.targets, key=self.calcular_distancia)
+        distancia_mais_perto = self.calcular_distancia(target_mais_perto)
+        return target_mais_perto, distancia_mais_perto
+
+    def calcular_distancia(self, target): # Calcula a distância do agente até o alvo
+        
         dx = target.x - self.robot.x
         dy = target.y - self.robot.y
-        distancia_to_target = math.sqrt(dx**2 + dy**2)
+        return (dx**2 + dy**2)**0.5
 
-        # Calcula a distância dinâmica de desvio baseada no alcance do obstáculo
-        min_distancia, max_distancia = self.avoidance_distancia_range
-        avoidance_distancia = max(
-            min_distancia,
-            min(max_distancia, distancia_to_target / 2)
-        )
 
-        # Calcula um novo ponto para desviar do obstáculo
-        avoidance_angle = math.pi / 4  # Ângulo de desvio em relação ao alvo (de 30 até 55 é bom)
-        novo_target_x = self.robot.x + (avoidance_distancia * math.cos(avoidance_angle) if dx >= 0 else -avoidance_distancia * math.cos(avoidance_angle))
-        novo_target_y = self.robot.y + (avoidance_distancia * math.sin(avoidance_angle) if dy >= 0 else -avoidance_distancia * math.sin(avoidance_angle)) 
-        # acima desse comentário é o cálculo de desvio em relação tanto ao eixo x tanto ou eixo y, usando da avoidance_distancia e avoidance_angle como parametro)
+    def designar_task(self): # Atribui uma task ao agente, fazendo a lógica de escolher o mais perto tal
 
-        novo_target = Point(novo_target_x, novo_target_y)
-
-        # Calcula a velocidade necessária para atingir o ponto de desvio
-        target_velocity, target_angle_velocity = Navigation.goToPoint(self.robot, novo_target)
-
-        # Ajuste de desaceleração quando o obstáculo está muito próximo, bom para ficar mais lento e partir para o próximo objetivo com mais calma, close_obstacle_distancia é parametro mutável
-        if distancia_to_target < self.close_obstacle_distancia: 
-            self.slow_down_factor = 0.8  # Reduz a velocidade se o obstáculo estiver muito próximo
-        else:
-            self.slow_down_factor = 1.0  # continua ou restaura a velocidade normal
-
-        # Aplica o fator de desaceleração ou aceleração ao movimento
-        adjusted_velocity = Point(
-            target_velocity.x * self.slow_down_factor,
-            target_velocity.y * self.slow_down_factor
-        )
-
-        return adjusted_velocity, target_angle_velocity
-
-    ### FUNÇÕES DE SELEÇÃO E PRIORIZAÇÃO DE TARGETS ###
-
-    def choose_target(self):
-        """Escolhe o alvo mais próximo entre os objetivos disponíveis, e marca eles, aplicando a regra da exclusividade"""
-        if len(self.targets) == 0: #se nao existir targets 
-            return None #retorna nenhum target no momento para esse agent
-
-        sorted_targets = sorted(self.targets, key=lambda target: self.calculate_distancia(target)) #lista de distancias de cada agente para cada target sortada, sendo o primeiro a menor distancia
-        closest_target = sorted_targets[0] #seleciona o primeiro, the choosen one
-        dx = closest_target.x - self.robot.x
-        dy = closest_target.y - self.robot.y
-        distancia_to_target = math.sqrt(dx**2 + dy**2) #recalcula a distancia para o target
-
-        return closest_target, distancia_to_target #retorna qual o target mais perto, e sua distancia
-
-    def calculate_distancia(self, target):
-        """Calcula a distância real entre o agente e um alvo, dinamicamente."""
-        dx = target.x - self.robot.x
-        dy = target.y - self.robot.y
-        return math.sqrt(dx**2 + dy**2)
-
-    ### FUNÇÕES DE ALOCAÇÃO DE TAREFAS E EXCLUSIVIDADE ###
-
-    def assign_task(self):
-        """Atribui um alvo ao agente de forma exclusiva, levando em consideração a proximidade e a exclusividade de alvos."""
-        closest_target, closest_distancia = self.choose_target()
-
-        if closest_target is None: #se nao existir target para ele
-            print("Nenhum objetivo válido encontrado!")
-            self.assigned_target = None
+        target_mais_perto, distancia_mais_perto = self.escolher_target()
+        if target_mais_perto is None:
+            self.target_designado = None
             self.set_vel(Point(0, 0))
             self.set_angle_vel(0)
             return
 
-        # Verifica se o objetivo já foi atribuído a outro agente, para garantir a exclusividade
-        if closest_target in ExampleAgent.assigned_targets:
-            assigned_agent, assigned_distancia = ExampleAgent.assigned_targets[closest_target]
+        target_id = id(target_mais_perto)
 
-            if assigned_agent != self.id and closest_distancia >= assigned_distancia:
-                print(f"Agente {self.id}: O objetivo já está sendo perseguido pelo agente {assigned_agent}.") #debugar
-                self.assigned_target = None
+        if target_id in ExampleAgent.distancias_agentes:
+            agente_designado, distancia_designada = ExampleAgent.distancias_agentes[target_id]
+            if agente_designado != self.id and distancia_mais_perto >= distancia_designada:
+                self.target_designado = None
                 self.set_vel(Point(0, 0))
                 self.set_angle_vel(0)
                 return
 
-        # Atualiza a atribuição do objetivo no dicionário compartilhado
-        ExampleAgent.assigned_targets[closest_target] = (self.id, closest_distancia)
-        self.assigned_target = closest_target
+        if self.target_designado and self.calcular_distancia(self.target_designado) < self.margem_safe:
+            target_id_to_remove = id(self.target_designado)
+            if target_id_to_remove in ExampleAgent.distancias_agentes:
+                del ExampleAgent.distancias_agentes[target_id_to_remove]
 
-    ### FUNÇÕES DE MOVIMENTAÇÃO E DECISÃO ###
+        ExampleAgent.distancias_agentes[target_id] = (self.id, distancia_mais_perto)
+        self.target_designado = target_mais_perto
 
-    def move_towards_target(self, target, distancia):
-        """Movimenta o agente em direção ao alvo, levando em consideração a evitação de obstáculos."""
+    def mover_direcao_target(self, target): # Move o agente em direção ao alvo ou evita obstáculos se necessário.
+        
+        obstacle_distance = self.ray_casting(target)
+
+        if obstacle_distance:
+            self.modo_desviar = True
+            target_velocity, velocidade_angular_target = self.avoid_obstacle(target)
+        else:
+            self.modo_desviar = False
+            self.velocidade_do_agente = 0.9
+            target_velocity, velocidade_angular_target = Navigation.goToPoint(self.robot, target)
+
+        velocidade_ajustada = Point(target_velocity.x * self.velocidade_do_agente, target_velocity.y * self.velocidade_do_agente)
+        
+        self.set_vel(velocidade_ajustada)
+        self.set_angle_vel(velocidade_angular_target)
+
+    def avoid_obstacle(self, target): # Evita obstáculos ajustando o trajeto.
+       
         dx = target.x - self.robot.x
         dy = target.y - self.robot.y
+       
+        distance_to_target = (dx**2 + dy**2)**0.5
 
-        # Verifica obstáculos no caminho
-        obstacle_distancia = self.cast_ray(target)
+       
+        min_distance, max_distance = self.distancia_de_evitar_range
+        avoidance_distance = max(min_distance, min(max_distance, distance_to_target / 2))
+       
+        angulo_de_desvio = 0.70  # entre 0.6 e 0.9 está bom
 
-        if obstacle_distancia < float('inf'):
-            self.avoidance_mode = True
-            target_velocity, target_angle_velocity = self.avoid_obstacle(target)
+        novo_target_x = self.robot.x + avoidance_distance * (angulo_de_desvio if dx >= 0 else -angulo_de_desvio)
+        novo_target_y = self.robot.y + avoidance_distance * (angulo_de_desvio if dy >= 0 else -angulo_de_desvio)
+
+        novo_target = Point(novo_target_x, novo_target_y)
+
+        target_velocity, velocidade_angular_target = Navigation.goToPoint(self.robot, novo_target)
+
+        if distance_to_target < self.distancia_perto_demais: #desacelerar ou velocidade normal para o agente, dependendo da distancia para o target
+            self.velocidade_do_agente = 0.9
         else:
-            self.avoidance_mode = False
-            self.slow_down_factor = 1
+            self.velocidade_do_agente = 1.0
 
-            target_velocity, target_angle_velocity = Navigation.goToPoint(self.robot, target)
+        velocidade_ajustada = Point( target_velocity.x * self.velocidade_do_agente, target_velocity.y * self.velocidade_do_agente,)
 
-        # Ajuste da velocidade do agente após desvio ou movimento normal
-        adjusted_velocity = Point(
-            target_velocity.x * self.slow_down_factor,
-            target_velocity.y * self.slow_down_factor
-        )
+        return velocidade_ajustada, velocidade_angular_target
 
-        self.set_vel(adjusted_velocity)
-        self.set_angle_vel(target_angle_velocity)
+    def decision(self): # Toma decisões...
+        
+        self.designar_task()
+        if self.target_designado:
+            self.mover_direcao_target(self.target_designado)
+        self.painel_de_controle()
 
-    def decision(self):
-        """Função de decisão principal do agente, que determina o que fazer a cada ciclo de execução."""
-        self.assign_task()
-
-        if self.assigned_target:
-            print(f"Agente {self.id} se movendo em direção ao objetivo: ({self.assigned_target.x:.2f}, {self.assigned_target.y:.2f})")
-            self.move_towards_target(self.assigned_target, self.calculate_distancia(self.assigned_target))
-        else:
-            print(f"Agente {self.id} está parado, sem objetivo atribuído.")
-            self.set_vel(Point(0, 0))
-            self.set_angle_vel(0)
-
-    def post_decision(self):
-        """Função executada após a tomada de decisão, nao sei mt oque fazer aqui"""
+    def post_decision(self): # nao sei oque fazer aqui
         pass
